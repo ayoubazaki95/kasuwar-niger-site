@@ -1,0 +1,34 @@
+LISEZ CECI EN PREMIER — IMPORTANT
+==================================
+
+Ce dossier contient une application Next.js (Node.js), PAS un site HTML classique.
+
+⚠️ Ne le déposez PAS simplement dans "public_html" en espérant que ça marche tout seul.
+Une appli Node.js a besoin d'être démarrée par un processus serveur (via l'outil
+"Setup Node.js App" de cPanel LWS) — ce n'est pas juste des pages à afficher.
+
+MARCHE À SUIVRE (dans l'ordre) :
+
+1. Ouvrez GUIDE-HEBERGEMENT-LWS.md — c'est le guide pas-à-pas complet et spécifique à LWS,
+   étape par étape, depuis la création de l'application Node.js dans cPanel jusqu'à la
+   mise en ligne sur kassuwarniger.com.
+
+2. Avant d'importer ce dossier sur LWS, testez-le d'abord sur votre ordinateur en suivant
+   GUIDE-INSTALLATION.md — ça vous évite de découvrir un problème une fois sur le serveur.
+
+3. Un fichier .env.local N'EST PAS inclus dans ce dossier (volontairement, pour ne pas
+   faire circuler vos identifiants admin). Vous devrez le recréer vous-même — les deux
+   guides ci-dessus expliquent exactement quoi mettre dedans et où.
+
+4. Le dossier "node_modules" n'est pas inclus non plus (il est volumineux et se
+   régénère automatiquement avec la commande "npm install", à exécuter soit sur votre
+   ordinateur soit directement sur le serveur LWS — voir le guide).
+
+Résumé ultra-rapide de l'étape LWS (détails complets dans GUIDE-HEBERGEMENT-LWS.md) :
+  cPanel → "Setup Node.js App" → Create Application
+    → Application root : un dossier hors de public_html
+    → Application startup file : server.js
+  → importer ce dossier dans ce Application root via le Gestionnaire de fichiers
+  → bouton "Run NPM Install"
+  → ajouter les variables d'environnement (NEXT_PUBLIC_ADMIN_EMAIL, NEXT_PUBLIC_ADMIN_PASSWORD_HASH)
+  → Restart
