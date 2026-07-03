@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Valeurs par défaut, écrasées en direct par ThemeApplier selon les Paramètres admin */
+  --brand-primary: #F5740F;
+  --brand-secondary: #129447;
+  --brand-accent: #F2A93B;
+}
+
 html, body {
   background: #ffffff;
   color: #15191B;
@@ -16,4 +23,57 @@ html, body {
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.animate-fade-up {
+  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+.stagger-1 { animation-delay: 0.04s; }
+.stagger-2 { animation-delay: 0.08s; }
+.stagger-3 { animation-delay: 0.12s; }
+.stagger-4 { animation-delay: 0.16s; }
+.stagger-5 { animation-delay: 0.2s; }
+.stagger-6 { animation-delay: 0.24s; }
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -12px rgba(21, 25, 27, 0.18);
+}
+
+.press-scale {
+  transition: transform 0.12s ease;
+}
+.press-scale:active {
+  transform: scale(0.96);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #F2F5F4 25%, #E7EBEA 37%, #F2F5F4 63%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }

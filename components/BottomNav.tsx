@@ -17,7 +17,7 @@ export default function BottomNav() {
   const { count } = useCart();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-line">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-line">
       <div className="max-w-md mx-auto flex items-center justify-around py-2">
         {TABS.map((t) => {
           const active = pathname === t.href;

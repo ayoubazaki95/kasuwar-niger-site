@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import {
-  LayoutDashboard, UtensilsCrossed, ShoppingBag, Bike, Settings, LogOut,
+  LayoutDashboard, UtensilsCrossed, ShoppingBag, Bike, Settings, LogOut, Shirt, Pill, Receipt,
 } from "lucide-react";
 import "../globals.css";
 import Logo from "@/components/Logo";
@@ -14,7 +14,10 @@ const NAV = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/admin/restaurants", label: "Restaurants & plats", icon: UtensilsCrossed },
   { href: "/admin/produits", label: "Produits (marketplace)", icon: ShoppingBag },
+  { href: "/admin/pressing", label: "Pressing", icon: Shirt },
+  { href: "/admin/pharmacies", label: "Pharmacies", icon: Pill },
   { href: "/admin/livreurs", label: "Livreurs", icon: Bike },
+  { href: "/admin/commandes", label: "Commandes", icon: Receipt },
   { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ];
 
@@ -75,7 +78,9 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         <div className="md:hidden h-14" />
         <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
           <div className="mb-5 px-3 py-2 rounded-xl text-[11px] bg-gold/10 text-[#8a5a00] border border-gold/30">
-            Mode démonstration — les données ajoutées ici sont enregistrées uniquement dans ce navigateur (localStorage) et ne sont pas encore connectées à une base de données partagée ni au site public.
+            Mode démonstration — ce que vous ajoutez ici apparaît immédiatement sur le site public, mais uniquement dans <strong>ce
+            navigateur</strong> (stockage local). Un visiteur sur un autre appareil ne le verra pas tant qu&apos;il n&apos;y a pas de
+            base de données partagée derrière.
           </div>
           {children}
         </div>

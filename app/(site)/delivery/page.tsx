@@ -12,14 +12,14 @@ export default function DeliveryPage() {
 
   return (
     <div>
-      <div className="px-5 pt-4">
+      <div className="px-5 md:px-0 pt-4">
         <Link href="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-inkSoft">
           <ArrowLeft size={14} /> Retour
         </Link>
         <div className="text-lg font-display font-bold mt-2">Livraison de colis</div>
       </div>
 
-      <div className="px-5 mt-4 space-y-2.5">
+      <div className="px-5 md:px-0 mt-4 space-y-2.5">
         <div className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-line">
           <div className="w-2 h-2 rounded-full bg-green" />
           <span className="text-sm">Récupération — Plateau, Rue NB-12</span>
@@ -30,7 +30,7 @@ export default function DeliveryPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 px-5 mt-4">
+      <div className="flex gap-2 px-5 md:px-0 mt-4">
         {["Document", "Colis", "Course"].map((t, i) => (
           <span key={t} className={`px-3 py-1.5 rounded-full text-xs font-semibold ${i === 1 ? "bg-orange text-white" : "bg-mist"}`}>
             {t}
@@ -38,7 +38,7 @@ export default function DeliveryPage() {
         ))}
       </div>
 
-      <div className="mx-5 mt-4 flex items-center justify-between px-4 py-3 rounded-2xl bg-mist">
+      <div className="mx-5 md:mx-0 mt-4 flex items-center justify-between px-4 py-3 rounded-2xl bg-mist">
         <span className="text-xs text-inkSoft">Distance estimée</span>
         <span className="text-xs font-bold font-mono">4.8 km • 1 200 F</span>
       </div>

@@ -5,8 +5,8 @@ const ITEMS = ["Mes commandes", "Mes adresses", "Moyens de paiement", "Notificat
 export default function AccountPage() {
   return (
     <div>
-      <div className="px-5 pt-4 text-lg font-display font-bold">Mon compte</div>
-      <div className="flex items-center gap-3 px-5 mt-4">
+      <div className="px-5 md:px-0 pt-4 text-lg font-display font-bold">Mon compte</div>
+      <div className="flex items-center gap-3 px-5 md:px-0 mt-4">
         <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold bg-orange font-display">
           AI
         </div>
