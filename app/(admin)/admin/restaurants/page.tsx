@@ -116,7 +116,7 @@ export default function AdminRestaurantsPage() {
             </div>
             <Field label="Nom du plat" value={dishForm.name} onChange={(v) => setDishForm({ ...dishForm, name: v })} required />
             <Field label="Description" value={dishForm.desc} onChange={(v) => setDishForm({ ...dishForm, desc: v })} />
-            <Field label="Prix (FCFA)" type="number" value={dishForm.price} onChange={(v) => setDishForm({ ...dishForm, price: v })} required />
+            <Field label="Prix (FCFA)" type="number" value={dishForm.price} onChange={(v) => setDishForm({ ...dishForm, price: Number(v) })} required />
             <ImageUploadField images={dishForm.images || []} onChange={(images) => setDishForm({ ...dishForm, images })} label="Photos du plat" />
             <button type="submit" className="w-full py-2.5 rounded-xl text-white text-sm font-bold bg-green press-scale">Ajouter</button>
           </div>
