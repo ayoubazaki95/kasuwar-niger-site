@@ -3,21 +3,19 @@
 import { useEffect, useState, ReactNode } from "react";
 import { Wrench } from "lucide-react";
 import Logo from "./Logo";
-import { DEFAULT_SETTINGS } from "@/lib/admin-store";
 
 export default function MaintenanceGate({ children }: { children: ReactNode }) {
   const [maintenance, setMaintenance] = useState(false);
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("kasuwar-admin-settings");
-      const settings = raw ? JSON.parse(raw) : DEFAULT_SETTINGS;
-      setMaintenance(!!settings.maintenanceMode);
-    } catch {
-      /* ignore */
-    }
-    setChecked(true);
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => setMaintenance(!!data?.item?.maintenance_mode))
+      .catch(() => {
+        /* si l'API échoue, on n'affiche pas la maintenance par défaut */
+      })
+      .finally(() => setChecked(true));
   }, []);
 
   if (!checked) return null;

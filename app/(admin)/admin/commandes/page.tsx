@@ -50,12 +50,23 @@ export default function AdminOrdersPage() {
             </div>
 
             <div className="mt-3 pl-3 border-l-2 border-line space-y-1">
+              {o.items.length === 0 && <div className="text-xs text-inkSoft italic">Commande personnalisée (pas d&apos;articles du catalogue)</div>}
               {o.items.map((it, i) => (
                 <div key={i} className="text-xs text-inkSoft">
                   {it.qty}x {it.name} <span className="text-inkSoft/70">({it.source})</span> — {(it.price * it.qty).toLocaleString("fr-FR")} F
                 </div>
               ))}
             </div>
+
+            {o.restaurantNote && (
+              <div className="mt-2 text-xs"><span className="font-semibold text-inkSoft">Restaurant / boutique : </span>{o.restaurantNote}</div>
+            )}
+            {o.specialInstructions && (
+              <div className="mt-1 text-xs bg-mist rounded-lg px-2.5 py-2"><span className="font-semibold text-inkSoft">Demande du client : </span>{o.specialInstructions}</div>
+            )}
+            {o.invoiceRequested && (
+              <div className="mt-2 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange/10 text-orange">🧾 Facture demandée</div>
+            )}
 
             <div className="flex flex-wrap gap-1.5 mt-3">
               {STATUSES.map((s) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Bell, ChevronRight, Search, ShoppingCart } from "lucide-react";
+import { MapPin, Bell, ChevronRight, Search, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -72,6 +72,9 @@ export default function Header() {
                   {count}
                 </span>
               )}
+            </Link>
+            <Link href="/account" className="hidden md:flex w-9 h-9 rounded-full items-center justify-center bg-mist press-scale">
+              <User size={16} />
             </Link>
             <button className="w-9 h-9 rounded-full flex items-center justify-center bg-mist press-scale">
               <Bell size={16} />

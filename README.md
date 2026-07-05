@@ -38,8 +38,9 @@ Les restaurants et produits ajoutés dans l'admin **apparaissent immédiatement 
 
 ### ⚠️ Important — sécurité et limites de ce tableau de bord
 
-- Les données ajoutées dans `/admin` sont stockées **dans le navigateur** (localStorage), pas dans une base de données centrale. Un client qui visite le site depuis son propre téléphone **ne verra pas** ces changements tant qu'il n'y a pas de vraie base de données partagée derrière. C'est un espace fonctionnel de démonstration et de validation de l'interface, pas encore un back-office connecté à tous vos utilisateurs.
-- La connexion `/admin/login` vérifie l'email et un hash du mot de passe **côté navigateur uniquement** (aucun serveur ne valide réellement l'identité). Une personne inspectant le code source peut techniquement le contourner. Ce n'est **pas suffisant pour protéger un site en production** gérant de vraies commandes et données clients.
+- Les données du site (restaurants, plats, produits, livreurs, pressing, pharmacies, commandes, paramètres) sont stockées dans une **vraie base de données partagée (Supabase/PostgreSQL)** — visibles par tous vos visiteurs, pas seulement dans votre navigateur.
+- Les **comptes clients** (inscription/connexion) utilisent l'authentification Supabase, avec mots de passe hashés correctement côté serveur.
+- La connexion `/admin/login` (tableau de bord admin) reste une vérification **côté navigateur** (email + hash du mot de passe), séparée des comptes clients. Suffisante si vous gardez le lien `/admin` privé, mais changez ce mot de passe avant un usage public à grande échelle et gardez à l'esprit qu'une personne inspectant le code source pourrait techniquement la contourner.
 - Le mot de passe a été partagé en clair dans notre conversation : **changez-le** avant toute mise en ligne réelle destinée au public (voir `.env.local.example` pour générer un nouveau hash), et ne committez jamais `.env.local` sur GitHub (déjà exclu via `.gitignore`).
 - Pour un vrai back-office sécurisé, partagé entre tous les utilisateurs et connecté aux commandes réelles, il faut un backend avec authentification serveur et base de données — voir le tableau plus bas.
 
@@ -126,8 +127,13 @@ app/
     layout.tsx           layout admin (sidebar, protection par authentification)
 components/             Header, BottomNav, Logo, MaintenanceGate, éléments UI partagés
 lib/
-  admin-store.tsx       données admin (restaurants, plats, produits, livreurs, paramètres) — localStorage
-  admin-auth.tsx        authentification admin (email + hash du mot de passe) — localStorage
-  cart-context.tsx      état du panier client — localStorage
+  admin-store.tsx       données du site (restaurants, plats, produits, livreurs, pressing, pharmacies, commandes, paramètres) — via Supabase
+  admin-auth.tsx        authentification du tableau de bord admin (email + hash du mot de passe)
+  customer-auth.tsx     comptes clients (inscription/connexion) — via Supabase Auth
+  supabase-admin.ts     client Supabase côté serveur (clé secrète, routes API uniquement)
+  supabase-browser.ts   client Supabase côté navigateur (clé publique, comptes clients)
+  cart-context.tsx      état du panier client — localStorage (propre à chaque appareil, normal)
+app/api/                routes API (restaurants, produits, plats, livreurs, pressing, pharmacies, commandes, paramètres)
+db/schema.sql           schéma complet à exécuter dans Supabase (SQL Editor)
   data.ts               données de démonstration pour les pharmacies
 ```

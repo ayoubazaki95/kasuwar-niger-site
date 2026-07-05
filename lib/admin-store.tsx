@@ -3,9 +3,33 @@
 import { useCallback, useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------
-   Lightweight client-side "database": each collection is synced to
-   its own localStorage key. No backend — see README "Sécurité" section.
+   Couche de données — parle maintenant à Supabase via les routes API
+   (/api/...) au lieu du localStorage du navigateur. Les types et la
+   forme des hooks (items, add, update, remove, hydrated) restent
+   identiques à avant, pour que le reste du site n'ait rien à changer.
 ------------------------------------------------------------------- */
+
+async function api<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Erreur ${res.status}`);
+  }
+  return res.json();
+}
+
+function reportError(context: string, err: unknown) {
+  // eslint-disable-next-line no-console
+  console.error(`[${context}]`, err);
+  if (typeof window !== "undefined") {
+    window.alert(`Une erreur est survenue (${context}). Vérifiez la connexion à la base de données dans les Paramètres/variables d'environnement.`);
+  }
+}
+
+/* ---------------------- Types (inchangés) ---------------------- */
 
 export type Restaurant = {
   id: number;
@@ -76,9 +100,13 @@ export type OrderItem = {
 export type Order = {
   id: number;
   createdAt: string;
+  userId?: string;
   customerName: string;
   customerPhone: string;
   address: string;
+  restaurantNote: string;
+  specialInstructions: string;
+  invoiceRequested: boolean;
   paymentMethod: "Cash à la livraison" | "Mobile Money";
   items: OrderItem[];
   total: number;
@@ -103,44 +131,6 @@ export type Settings = {
   maintenanceMode: boolean;
 };
 
-export const DEFAULT_RESTAURANTS: Restaurant[] = [
-  { id: 1, name: "Chez Mariama", tag: "Tô • Riz au gras • Sauce", quartier: "Plateau", rating: 4.8, time: "20-30 min", fee: 500, color: "from-orange to-orange-dark", description: "Cuisine nigérienne traditionnelle préparée avec des produits locaux et de saison.", images: [] },
-  { id: 2, name: "Le Sahel Grill", tag: "Brochettes • Grillades", quartier: "Yantala", rating: 4.6, time: "25-35 min", fee: 700, color: "from-green to-green-dark", description: "Grillades au charbon de bois, viandes marinées maison.", images: [] },
-  { id: 3, name: "Bissap & Co", tag: "Jus naturels • Snacks", quartier: "Terminus", rating: 4.9, time: "15-25 min", fee: 400, color: "from-gold to-orange-dark", description: "Jus frais pressés et en-cas légers, préparés à la commande.", images: [] },
-  { id: 4, name: "Niamey Saveurs", tag: "Thiéboudienne • Attiéké", quartier: "Boukoki", rating: 4.5, time: "30-40 min", fee: 600, color: "from-ink to-inkSoft", description: "Spécialités ouest-africaines, portions généreuses.", images: [] },
-];
-
-export const DEFAULT_MENU: MenuItem[] = [
-  { id: 1, restaurantId: 1, name: "Riz au gras + viande", desc: "Riz parfumé, sauce tomate, bœuf braisé", price: 2500, images: [] },
-  { id: 2, restaurantId: 1, name: "Tô + sauce gombo", desc: "Pâte de mil, sauce gombo et poisson fumé", price: 1800, images: [] },
-  { id: 3, restaurantId: 2, name: "Brochettes de bœuf (x5)", desc: "Marinées, grillées au charbon de bois", price: 2000, images: [] },
-  { id: 4, restaurantId: 3, name: "Jus de bissap", desc: "Hibiscus frais, glaçons, menthe", price: 700, images: [] },
-];
-
-export const DEFAULT_PRODUCTS: Product[] = [
-  { id: 1, name: "Pagne Bazin Riche", price: 18000, store: "Boutique Aïssa", color: "from-green to-ink", category: "Mode", description: "Tissu bazin riche de qualité, motifs brodés main.", images: [] },
-  { id: 2, name: "Sandales en cuir", price: 9500, store: "Atelier Boukoki", color: "from-orange to-gold", category: "Mode", description: "Cuir véritable, fabrication artisanale locale.", images: [] },
-  { id: 3, name: "Sac à main tressé", price: 12000, store: "Niamey Craft", color: "from-ink to-inkSoft", category: "Artisanat", description: "Tressage traditionnel, pièce unique.", images: [] },
-  { id: 4, name: "Théière artisanale", price: 7000, store: "Marché Katako", color: "from-gold to-green", category: "Maison", description: "Métal martelé à la main.", images: [] },
-];
-
-export const DEFAULT_DRIVERS: Driver[] = [
-  { id: 1, name: "Souleymane Idi", phone: "+227 96 11 22 33", zone: "Plateau / Terminus", vehicle: "Moto", status: "Disponible", images: [] },
-  { id: 2, name: "Hamissou Boubacar", phone: "+227 96 44 55 66", zone: "Yantala / Boukoki", vehicle: "Moto", status: "Hors service", images: [] },
-];
-
-export const DEFAULT_PRESSING_SERVICES: PressingService[] = [
-  { id: 1, name: "Lavage standard", unitPrice: 800, unitLabel: "F/pièce" },
-  { id: 2, name: "Nettoyage à sec", unitPrice: 1500, unitLabel: "F/pièce" },
-  { id: 3, name: "Repassage seul", unitPrice: 800, unitLabel: "F/pièce" },
-];
-
-export const DEFAULT_PHARMACIES: Pharmacy[] = [
-  { id: 1, name: "Pharmacie du Plateau", quartier: "Plateau, près du Grand Marché", distance: "1.2 km", hours: "Garde 24h", phone: "+22790000001" },
-  { id: 2, name: "Pharmacie Yantala", quartier: "Yantala, Avenue de la Liberté", distance: "2.4 km", hours: "Garde jusqu'à 7h", phone: "+22790000002" },
-  { id: 3, name: "Pharmacie Terminus", quartier: "Terminus, face station", distance: "3.1 km", hours: "Garde 24h", phone: "+22790000003" },
-];
-
 export const DEFAULT_SETTINGS: Settings = {
   siteName: "Kasuwar Niger",
   tagline: "E-commerce Marketplace",
@@ -153,80 +143,183 @@ export const DEFAULT_SETTINGS: Settings = {
   heroTitle: "-20% sur votre première commande",
   heroSubtitle: "Offre du jour",
   promoButtonLabel: "En profiter",
-  contactPhone: "+227 90 00 00 00",
-  contactEmail: "contact@kassuwarniger.com",
-  whatsappNumber: "+227 90 00 00 00",
+  contactPhone: "",
+  contactEmail: "",
+  whatsappNumber: "",
   maintenanceMode: false,
 };
 
-function useLocalCollection<T extends { id: number }>(key: string, seed: T[]) {
-  const [items, setItems] = useState<T[]>(seed);
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* ---------------- Conversion camelCase (app) <-> snake_case (base) ---------------- */
+
+const restaurantFromRow = (r: any): Restaurant => ({
+  id: r.id, name: r.name, tag: r.tag, quartier: r.quartier, rating: Number(r.rating),
+  time: r.time, fee: r.fee, color: r.color, description: r.description || "", images: r.images || [],
+});
+const restaurantToRow = (r: Partial<Restaurant>) => ({ ...r });
+
+const menuItemFromRow = (r: any): MenuItem => ({
+  id: r.id, restaurantId: r.restaurant_id, name: r.name, desc: r.descr, price: r.price, images: r.images || [],
+});
+const menuItemToRow = (m: Partial<MenuItem>) => {
+  const row: any = {};
+  if (m.restaurantId !== undefined) row.restaurant_id = m.restaurantId;
+  if (m.name !== undefined) row.name = m.name;
+  if (m.desc !== undefined) row.descr = m.desc;
+  if (m.price !== undefined) row.price = m.price;
+  if (m.images !== undefined) row.images = m.images;
+  return row;
+};
+
+const productFromRow = (r: any): Product => ({
+  id: r.id, name: r.name, price: r.price, store: r.store, color: r.color,
+  category: r.category || "", description: r.description || "", images: r.images || [],
+});
+const productToRow = (p: Partial<Product>) => ({ ...p });
+
+const driverFromRow = (r: any): Driver => ({
+  id: r.id, name: r.name, phone: r.phone, zone: r.zone, vehicle: r.vehicle, status: r.status, images: r.images || [],
+});
+const driverToRow = (d: Partial<Driver>) => ({ ...d });
+
+const pressingFromRow = (r: any): PressingService => ({
+  id: r.id, name: r.name, unitPrice: r.unit_price, unitLabel: r.unit_label,
+});
+const pressingToRow = (p: Partial<PressingService>) => {
+  const row: any = {};
+  if (p.name !== undefined) row.name = p.name;
+  if (p.unitPrice !== undefined) row.unit_price = p.unitPrice;
+  if (p.unitLabel !== undefined) row.unit_label = p.unitLabel;
+  return row;
+};
+
+const pharmacyFromRow = (r: any): Pharmacy => ({
+  id: r.id, name: r.name, quartier: r.quartier, distance: r.distance, hours: r.hours, phone: r.phone,
+});
+const pharmacyToRow = (p: Partial<Pharmacy>) => ({ ...p });
+
+const orderFromRow = (r: any): Order => ({
+  id: r.id, createdAt: r.created_at, userId: r.user_id || undefined, customerName: r.customer_name,
+  customerPhone: r.customer_phone, address: r.address, restaurantNote: r.restaurant_note || "",
+  specialInstructions: r.special_instructions || "", invoiceRequested: !!r.invoice_requested,
+  paymentMethod: r.payment_method, items: r.items || [], total: r.total, status: r.status,
+});
+const orderToRow = (o: Partial<Order>) => {
+  const row: any = {};
+  if (o.customerName !== undefined) row.customer_name = o.customerName;
+  if (o.customerPhone !== undefined) row.customer_phone = o.customerPhone;
+  if (o.address !== undefined) row.address = o.address;
+  if (o.restaurantNote !== undefined) row.restaurant_note = o.restaurantNote;
+  if (o.specialInstructions !== undefined) row.special_instructions = o.specialInstructions;
+  if (o.invoiceRequested !== undefined) row.invoice_requested = o.invoiceRequested;
+  if (o.paymentMethod !== undefined) row.payment_method = o.paymentMethod;
+  if (o.items !== undefined) row.items = o.items;
+  if (o.total !== undefined) row.total = o.total;
+  if (o.status !== undefined) row.status = o.status;
+  if (o.userId !== undefined) row.user_id = o.userId;
+  return row;
+};
+
+const settingsFromRow = (r: any): Settings => ({
+  siteName: r.site_name, tagline: r.tagline, currency: r.currency, baseDeliveryFee: r.base_delivery_fee,
+  commissionPercent: r.commission_percent, primaryColor: r.primary_color, secondaryColor: r.secondary_color,
+  accentColor: r.accent_color, heroTitle: r.hero_title, heroSubtitle: r.hero_subtitle,
+  promoButtonLabel: r.promo_button_label, contactPhone: r.contact_phone || "", contactEmail: r.contact_email || "",
+  whatsappNumber: r.whatsapp_number || "", maintenanceMode: !!r.maintenance_mode,
+});
+const settingsToRow = (s: Settings) => ({
+  site_name: s.siteName, tagline: s.tagline, currency: s.currency, base_delivery_fee: s.baseDeliveryFee,
+  commission_percent: s.commissionPercent, primary_color: s.primaryColor, secondary_color: s.secondaryColor,
+  accent_color: s.accentColor, hero_title: s.heroTitle, hero_subtitle: s.heroSubtitle,
+  promo_button_label: s.promoButtonLabel, contact_phone: s.contactPhone, contact_email: s.contactEmail,
+  whatsapp_number: s.whatsappNumber, maintenance_mode: s.maintenanceMode,
+});
+
+/* ---------------- Hook générique par collection ---------------- */
+
+function useCollection<T extends { id: number }>(
+  endpoint: string,
+  fromRow: (r: any) => T,
+  toRow: (t: any) => any
+) {
+  const [items, setItems] = useState<T[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) setItems(JSON.parse(raw));
-    } catch {
-      /* fall back to seed */
-    }
-    setHydrated(true);
+    let cancelled = false;
+    api<{ items: any[] }>(`/api/${endpoint}`)
+      .then((res) => {
+        if (cancelled) return;
+        setItems(res.items.map(fromRow));
+      })
+      .catch((err) => reportError(endpoint, err))
+      .finally(() => !cancelled && setHydrated(true));
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
+  const add = useCallback(
+    async (item: Omit<T, "id">) => {
+      try {
+        const res = await api<{ item: any }>(`/api/${endpoint}`, { method: "POST", body: JSON.stringify(toRow(item)) });
+        setItems((prev) => [...prev, fromRow(res.item)]);
+      } catch (err) {
+        reportError(`${endpoint}:add`, err);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const update = useCallback(
+    async (id: number, patch: Partial<T>) => {
+      try {
+        await api(`/api/${endpoint}/${id}`, { method: "PUT", body: JSON.stringify(toRow(patch)) });
+        setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+      } catch (err) {
+        reportError(`${endpoint}:update`, err);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const remove = useCallback(async (id: number) => {
     try {
-      localStorage.setItem(key, JSON.stringify(items));
-    } catch {
-      /* storage full or unavailable */
+      await api(`/api/${endpoint}/${id}`, { method: "DELETE" });
+      setItems((prev) => prev.filter((x) => x.id !== id));
+    } catch (err) {
+      reportError(`${endpoint}:remove`, err);
     }
-  }, [items, hydrated, key]);
-
-  const add = useCallback((item: Omit<T, "id">) => {
-    setItems((prev) => {
-      const id = prev.reduce((max, i) => Math.max(max, i.id), 0) + 1;
-      return [...prev, { ...item, id } as T];
-    });
-  }, []);
-
-  const update = useCallback((id: number, patch: Partial<T>) => {
-    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
-  }, []);
-
-  const remove = useCallback((id: number) => {
-    setItems((prev) => prev.filter((x) => x.id !== id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { items, add, update, remove, hydrated };
 }
 
 export function useRestaurants() {
-  return useLocalCollection<Restaurant>("kasuwar-admin-restaurants", DEFAULT_RESTAURANTS);
+  return useCollection<Restaurant>("restaurants", restaurantFromRow, restaurantToRow);
 }
-
 export function useMenuItems() {
-  return useLocalCollection<MenuItem>("kasuwar-admin-menu", DEFAULT_MENU);
+  return useCollection<MenuItem>("menu-items", menuItemFromRow, menuItemToRow);
 }
-
 export function useProducts() {
-  return useLocalCollection<Product>("kasuwar-admin-products", DEFAULT_PRODUCTS);
+  return useCollection<Product>("products", productFromRow, productToRow);
 }
-
 export function useDrivers() {
-  return useLocalCollection<Driver>("kasuwar-admin-drivers", DEFAULT_DRIVERS);
+  return useCollection<Driver>("drivers", driverFromRow, driverToRow);
 }
-
 export function usePressingServices() {
-  return useLocalCollection<PressingService>("kasuwar-admin-pressing", DEFAULT_PRESSING_SERVICES);
+  return useCollection<PressingService>("pressing", pressingFromRow, pressingToRow);
 }
-
 export function usePharmacies() {
-  return useLocalCollection<Pharmacy>("kasuwar-admin-pharmacies", DEFAULT_PHARMACIES);
+  return useCollection<Pharmacy>("pharmacies", pharmacyFromRow, pharmacyToRow);
 }
-
 export function useOrders() {
-  return useLocalCollection<Order>("kasuwar-admin-orders", []);
+  return useCollection<Order>("orders", orderFromRow, orderToRow);
 }
 
 export function useSettings() {
@@ -234,25 +327,18 @@ export function useSettings() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("kasuwar-admin-settings");
-      if (raw) setSettingsState({ ...DEFAULT_SETTINGS, ...JSON.parse(raw) });
-    } catch {
-      /* fall back to defaults */
-    }
-    setHydrated(true);
+    api<{ item: any }>("/api/settings")
+      .then((res) => setSettingsState(settingsFromRow(res.item)))
+      .catch((err) => reportError("settings", err))
+      .finally(() => setHydrated(true));
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem("kasuwar-admin-settings", JSON.stringify(settings));
-    } catch {
-      /* storage full or unavailable */
-    }
-  }, [settings, hydrated]);
-
-  const setSettings = (s: Settings) => setSettingsState(s);
+  const setSettings = useCallback((s: Settings) => {
+    setSettingsState(s);
+    api("/api/settings", { method: "PUT", body: JSON.stringify(settingsToRow(s)) }).catch((err) =>
+      reportError("settings:update", err)
+    );
+  }, []);
 
   return { settings, setSettings, hydrated };
 }
