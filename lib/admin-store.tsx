@@ -51,6 +51,8 @@ export type MenuItem = {
   desc: string;
   price: number;
   images?: string[];
+  vendorId?: number;
+  approved?: boolean;
 };
 
 export type Product = {
@@ -62,6 +64,8 @@ export type Product = {
   category?: string;
   description?: string;
   images?: string[];
+  vendorId?: number;
+  approved?: boolean;
 };
 
 export type Driver = {
@@ -125,6 +129,7 @@ export type Settings = {
   heroTitle: string;
   heroSubtitle: string;
   promoButtonLabel: string;
+  promoButtonLink: string;
   contactPhone: string;
   contactEmail: string;
   whatsappNumber: string;
@@ -143,6 +148,7 @@ export const DEFAULT_SETTINGS: Settings = {
   heroTitle: "-20% sur votre première commande",
   heroSubtitle: "Offre du jour",
   promoButtonLabel: "En profiter",
+  promoButtonLink: "/marketplace",
   contactPhone: "",
   contactEmail: "",
   whatsappNumber: "",
@@ -161,6 +167,7 @@ const restaurantToRow = (r: Partial<Restaurant>) => ({ ...r });
 
 const menuItemFromRow = (r: any): MenuItem => ({
   id: r.id, restaurantId: r.restaurant_id, name: r.name, desc: r.descr, price: r.price, images: r.images || [],
+  vendorId: r.vendor_id || undefined, approved: r.approved !== false,
 });
 const menuItemToRow = (m: Partial<MenuItem>) => {
   const row: any = {};
@@ -169,14 +176,17 @@ const menuItemToRow = (m: Partial<MenuItem>) => {
   if (m.desc !== undefined) row.descr = m.desc;
   if (m.price !== undefined) row.price = m.price;
   if (m.images !== undefined) row.images = m.images;
+  if (m.vendorId !== undefined) row.vendor_id = m.vendorId;
+  if (m.approved !== undefined) row.approved = m.approved;
   return row;
 };
 
 const productFromRow = (r: any): Product => ({
   id: r.id, name: r.name, price: r.price, store: r.store, color: r.color,
   category: r.category || "", description: r.description || "", images: r.images || [],
+  vendorId: r.vendor_id || undefined, approved: r.approved !== false,
 });
-const productToRow = (p: Partial<Product>) => ({ ...p });
+const productToRow = (p: Partial<Product>) => ({ ...p, vendor_id: p.vendorId, vendorId: undefined });
 
 const driverFromRow = (r: any): Driver => ({
   id: r.id, name: r.name, phone: r.phone, zone: r.zone, vehicle: r.vehicle, status: r.status, images: r.images || [],
@@ -225,14 +235,14 @@ const settingsFromRow = (r: any): Settings => ({
   siteName: r.site_name, tagline: r.tagline, currency: r.currency, baseDeliveryFee: r.base_delivery_fee,
   commissionPercent: r.commission_percent, primaryColor: r.primary_color, secondaryColor: r.secondary_color,
   accentColor: r.accent_color, heroTitle: r.hero_title, heroSubtitle: r.hero_subtitle,
-  promoButtonLabel: r.promo_button_label, contactPhone: r.contact_phone || "", contactEmail: r.contact_email || "",
+  promoButtonLabel: r.promo_button_label, promoButtonLink: r.promo_button_link || "/marketplace", contactPhone: r.contact_phone || "", contactEmail: r.contact_email || "",
   whatsappNumber: r.whatsapp_number || "", maintenanceMode: !!r.maintenance_mode,
 });
 const settingsToRow = (s: Settings) => ({
   site_name: s.siteName, tagline: s.tagline, currency: s.currency, base_delivery_fee: s.baseDeliveryFee,
   commission_percent: s.commissionPercent, primary_color: s.primaryColor, secondary_color: s.secondaryColor,
   accent_color: s.accentColor, hero_title: s.heroTitle, hero_subtitle: s.heroSubtitle,
-  promo_button_label: s.promoButtonLabel, contact_phone: s.contactPhone, contact_email: s.contactEmail,
+  promo_button_label: s.promoButtonLabel, promo_button_link: s.promoButtonLink, contact_phone: s.contactPhone, contact_email: s.contactEmail,
   whatsapp_number: s.whatsappNumber, maintenance_mode: s.maintenanceMode,
 });
 
@@ -241,14 +251,15 @@ const settingsToRow = (s: Settings) => ({
 function useCollection<T extends { id: number }>(
   endpoint: string,
   fromRow: (r: any) => T,
-  toRow: (t: any) => any
+  toRow: (t: any) => any,
+  querySuffix = ""
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    api<{ items: any[] }>(`/api/${endpoint}`)
+    api<{ items: any[] }>(`/api/${endpoint}${querySuffix}`)
       .then((res) => {
         if (cancelled) return;
         setItems(res.items.map(fromRow));
@@ -303,11 +314,11 @@ function useCollection<T extends { id: number }>(
 export function useRestaurants() {
   return useCollection<Restaurant>("restaurants", restaurantFromRow, restaurantToRow);
 }
-export function useMenuItems() {
-  return useCollection<MenuItem>("menu-items", menuItemFromRow, menuItemToRow);
+export function useMenuItems(includeAll = false) {
+  return useCollection<MenuItem>("menu-items", menuItemFromRow, menuItemToRow, includeAll ? "?all=1" : "");
 }
-export function useProducts() {
-  return useCollection<Product>("products", productFromRow, productToRow);
+export function useProducts(includeAll = false) {
+  return useCollection<Product>("products", productFromRow, productToRow, includeAll ? "?all=1" : "");
 }
 export function useDrivers() {
   return useCollection<Driver>("drivers", driverFromRow, driverToRow);

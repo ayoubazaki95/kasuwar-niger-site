@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import {
-  LayoutDashboard, UtensilsCrossed, ShoppingBag, Bike, Settings, LogOut, Shirt, Pill, Receipt,
+  LayoutDashboard, UtensilsCrossed, ShoppingBag, Bike, Settings, LogOut, Shirt, Pill, Receipt, Users, Store,
 } from "lucide-react";
 import "../globals.css";
 import Logo from "@/components/Logo";
@@ -17,7 +17,9 @@ const NAV = [
   { href: "/admin/pressing", label: "Pressing", icon: Shirt },
   { href: "/admin/pharmacies", label: "Pharmacies", icon: Pill },
   { href: "/admin/livreurs", label: "Livreurs", icon: Bike },
+  { href: "/admin/vendeurs", label: "Vendeurs", icon: Store },
   { href: "/admin/commandes", label: "Commandes", icon: Receipt },
+  { href: "/admin/administrateurs", label: "Administrateurs", icon: Users },
   { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ];
 

@@ -17,7 +17,7 @@ type DishForm = Omit<MenuItem, "id"> & { id?: number };
 
 export default function AdminRestaurantsPage() {
   const { items: restaurants, add: addRestaurant, update: updateRestaurant, remove: removeRestaurant } = useRestaurants();
-  const { items: menu, add: addDish, remove: removeDish } = useMenuItems();
+  const { items: menu, add: addDish, update: updateDish, remove: removeDish } = useMenuItems(true);
 
   const [form, setForm] = useState<RestaurantForm | null>(null);
   const [dishForm, setDishForm] = useState<DishForm | null>(null);
@@ -91,9 +91,17 @@ export default function AdminRestaurantsPage() {
 
             <div className="mt-3 pl-3 border-l-2 border-line space-y-1.5">
               {menu.filter((m) => m.restaurantId === r.id).map((m) => (
-                <div key={m.id} className="flex items-center justify-between text-xs">
-                  <span>{m.name} <span className="text-inkSoft">— {m.price.toLocaleString("fr-FR")} F</span></span>
-                  <button onClick={() => removeDish(m.id)} className="text-inkSoft"><Trash2 size={12} /></button>
+                <div key={m.id} className="flex items-center justify-between text-xs gap-2">
+                  <span className="truncate">
+                    {m.name} <span className="text-inkSoft">— {m.price.toLocaleString("fr-FR")} F</span>
+                    {m.approved === false && <span className="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-gold/20 text-[#8a5a00]">EN ATTENTE</span>}
+                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {m.approved === false && (
+                      <button onClick={() => updateDish(m.id, { approved: true })} className="text-[10px] font-bold text-green">Valider</button>
+                    )}
+                    <button onClick={() => removeDish(m.id)} className="text-inkSoft"><Trash2 size={12} /></button>
+                  </div>
                 </div>
               ))}
               <button

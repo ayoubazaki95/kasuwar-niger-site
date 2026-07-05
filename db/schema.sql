@@ -20,7 +20,9 @@ create table if not exists menu_items (
   name text not null,
   descr text default '',
   price integer default 0,
-  images jsonb default '[]'
+  images jsonb default '[]',
+  vendor_id bigint,
+  approved boolean default true
 );
 
 create table if not exists products (
@@ -32,6 +34,8 @@ create table if not exists products (
   category text default '',
   description text default '',
   images jsonb default '[]',
+  vendor_id bigint,
+  approved boolean default true,
   created_at timestamptz default now()
 );
 
@@ -91,6 +95,7 @@ create table if not exists settings (
   hero_title text default '-20% sur votre première commande',
   hero_subtitle text default 'Offre du jour',
   promo_button_label text default 'En profiter',
+  promo_button_link text default '/marketplace',
   contact_phone text default '',
   contact_email text default '',
   whatsapp_number text default '',
@@ -98,6 +103,23 @@ create table if not exists settings (
   constraint single_row check (id = 1)
 );
 insert into settings (id) values (1) on conflict (id) do nothing;
+
+-- Administrateurs supplémentaires (en plus du compte admin principal défini par
+-- variables d'environnement). Ajoutés/supprimés depuis Admin -> Administrateurs.
+create table if not exists admin_accounts (
+  id bigint generated always as identity primary key,
+  email text unique not null,
+  password_hash text not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists vendor_accounts (
+  id bigint generated always as identity primary key,
+  email text unique not null,
+  password_hash text not null,
+  business_name text not null,
+  created_at timestamptz default now()
+);
 
 -- Comptes clients : Supabase gère déjà l'authentification (table auth.users, mots de
 -- passe hashés, sessions). Cette table ajoute juste les informations supplémentaires

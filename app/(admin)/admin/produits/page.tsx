@@ -11,7 +11,7 @@ const EMPTY: Omit<Product, "id"> = { name: "", price: 0, store: "", color: "from
 type ProductForm = Omit<Product, "id"> & { id?: number };
 
 export default function AdminProductsPage() {
-  const { items, add, update, remove } = useProducts();
+  const { items, add, update, remove } = useProducts(true);
   const [form, setForm] = useState<ProductForm | null>(null);
 
   const save = (e: React.FormEvent) => {
@@ -59,13 +59,23 @@ export default function AdminProductsPage() {
 
       <div className="grid md:grid-cols-2 gap-3">
         {items.map((p) => (
-          <div key={p.id} className="bg-white rounded-2xl border border-line p-4 flex items-center gap-3">
+          <div key={p.id} className={`bg-white rounded-2xl border p-4 flex items-center gap-3 ${p.approved === false ? "border-gold" : "border-line"}`}>
             <ImageSlider images={p.images} fallbackColor={p.color} className="w-14 h-14 rounded-xl shrink-0" alt={p.name} />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold truncate">{p.name}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-bold truncate">{p.name}</div>
+                {p.approved === false && (
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-gold/20 text-[#8a5a00] shrink-0">EN ATTENTE</span>
+                )}
+              </div>
               <div className="text-xs text-inkSoft truncate">{p.store} • {p.price.toLocaleString("fr-FR")} F</div>
             </div>
             <div className="flex gap-2 shrink-0">
+              {p.approved === false && (
+                <button onClick={() => update(p.id, { approved: true })} className="px-2.5 h-8 rounded-full bg-green text-white text-[11px] font-bold press-scale">
+                  Valider
+                </button>
+              )}
               <button onClick={() => setForm(p)} className="w-8 h-8 rounded-full bg-mist flex items-center justify-center press-scale"><Pencil size={13} /></button>
               <button onClick={() => remove(p.id)} className="w-8 h-8 rounded-full bg-mist flex items-center justify-center press-scale"><Trash2 size={13} /></button>
             </div>

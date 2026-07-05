@@ -45,7 +45,7 @@ export default function HomePage() {
           {hydrated ? settings.heroTitle : "-20% sur votre première commande"}
         </h2>
         <button
-          onClick={() => router.push("/marketplace")}
+          onClick={() => router.push(hydrated ? settings.promoButtonLink : "/marketplace")}
           className="mt-4 px-5 py-2.5 rounded-full text-xs font-bold bg-white relative press-scale hover-lift"
           style={{ color: "var(--brand-secondary)" }}
         >

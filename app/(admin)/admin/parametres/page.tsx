@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
           />
         </label>
 
-        <p className="md:col-span-2 text-xs font-bold uppercase tracking-wide text-inkSoft mt-2">Bannière d&apos;accueil</p>
+        <p className="md:col-span-2 text-xs font-bold uppercase tracking-wide text-inkSoft mt-2">Promotion en cours (bannière d&apos;accueil)</p>
 
         <label className="block">
           <span className="text-xs font-semibold text-inkSoft">Étiquette au-dessus du titre</span>
@@ -78,6 +78,15 @@ export default function AdminSettingsPage() {
           <input
             value={settings.promoButtonLabel}
             onChange={(e) => setSettings({ ...settings, promoButtonLabel: e.target.value })}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-mist text-sm outline-none"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-xs font-semibold text-inkSoft">Lien du bouton (ex: /marketplace, /restaurants)</span>
+          <input
+            value={settings.promoButtonLink}
+            onChange={(e) => setSettings({ ...settings, promoButtonLink: e.target.value })}
             className="w-full mt-1 px-3 py-2 rounded-xl bg-mist text-sm outline-none"
           />
         </label>
