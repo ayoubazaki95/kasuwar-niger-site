@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
+    delete body.id; // l'identifiant ne doit jamais faire partie des champs à modifier
     const supabase = getSupabaseAdmin();
     const { error } = await (supabase.from("orders") as any).update(body).eq("id", params.id);
     if (error) throw error;
