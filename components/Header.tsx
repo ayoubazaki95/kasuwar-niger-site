@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import Logo from "./Logo";
 import { useCart } from "@/lib/cart-context";
+import { useSettings } from "@/lib/admin-store";
 
 const NAV_LINKS = [
   { href: "/restaurants", label: "Restaurants" },
@@ -19,6 +20,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { count } = useCart();
+  const { settings } = useSettings();
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function Header() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between px-4 md:px-6 py-3 gap-4">
           <Link href="/" className="shrink-0">
-            <Logo size={22} />
+            <Logo size={22} name={settings.siteName} />
           </Link>
 
           {/* Desktop nav links */}
