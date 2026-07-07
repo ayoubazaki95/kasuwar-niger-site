@@ -79,11 +79,6 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 min-h-screen">
         <div className="md:hidden h-14" />
         <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
-          <div className="mb-5 px-3 py-2 rounded-xl text-[11px] bg-gold/10 text-[#8a5a00] border border-gold/30">
-            Mode démonstration — ce que vous ajoutez ici apparaît immédiatement sur le site public, mais uniquement dans <strong>ce
-            navigateur</strong> (stockage local). Un visiteur sur un autre appareil ne le verra pas tant qu&apos;il n&apos;y a pas de
-            base de données partagée derrière.
-          </div>
           {children}
         </div>
       </div>
